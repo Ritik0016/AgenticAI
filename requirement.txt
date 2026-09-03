@@ -1,0 +1,37 @@
+langchain
+langgraph
+langchain-core
+langchain-community
+langchain-text-splitters
+
+# LLM integrations
+langchain-openai
+langchain-google-genai
+langchain-mistralai
+langchain-groq
+
+
+# -----------------------------
+# Environment & Configuration
+# -----------------------------
+python-dotenv
+pydantic
+pydantic-settings
+
+
+# -----------------------------
+# LLM Provider SDKs
+# -----------------------------
+openai
+google-genai
+mistralai
+groq
+
+
+
+# -----------------------------
+# Search / Web Tools
+# -----------------------------
+tavily-python
+duckduckgo-search
+
