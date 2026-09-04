@@ -1,5 +1,7 @@
 from typing import TypedDict
 from langchain_mistralai import ChatMistralAI
+# pyrefly: ignore [missing-import]
+from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 load_dotenv()
 from langgraph.graph import StateGraph, START, END
@@ -11,9 +13,9 @@ class MyState(TypedDict):
     script_text : str
     translated_text : str
 
-
-model = ChatMistralAI(
-    model="mistral-small-latest",
+model = ChatGroq(
+    model = "groq/compound",
+    temperature = 0.8 
 )
 
 def editor_node(State:MyState)-> dict:

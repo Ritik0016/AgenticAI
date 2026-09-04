@@ -1,13 +1,15 @@
 
 from typing import TypedDict, Annotated
-from langchain_mistralai import ChatMistralAI
+# pyrefly: ignore [missing-import]
+from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 load_dotenv()
 from langgraph.graph import StateGraph, START, END
 
 
-model = ChatMistralAI(
-    model="mistral-small-latest",
+model = ChatGroq(
+    model = "groq/compound",
+    temperature = 0.1
 )
 
 def merge_dict(old:dict, new:dict):
