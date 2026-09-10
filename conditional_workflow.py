@@ -14,7 +14,7 @@ load_dotenv()
 #building models
 chat_model = ChatGroq(
     model = "groq/compound",
-    temperature = 0.4
+    temperature = 0.1
 )
 embedding_model = HuggingFaceEndpointEmbeddings(
     model="sentence-transformers/all-MiniLM-L6-v2"
@@ -48,7 +48,7 @@ fees_retriever = build_retrivers("fee_structure.pdf")
 # finds which node is the best fit according to the question asked by the user
 def classifier_node(state:State)->dict:
     """Look at the latest user message and decide which path to take."""
-
+    print("🔥 CLASSIFIER NODE EXECUTED")
     query = state['messages'][-1].content
 
     prompt = (
@@ -56,7 +56,7 @@ def classifier_node(state:State)->dict:
         "'academic', 'fee', or 'general'.\n\n"
         "Use 'academic' for questions about attendance, exams, grading, credits, "
         "promotion, course structure, summer training, or degree requirements.\n"
-        "Use 'fee' for questions about tuition, payment, refund, late charges, "
+        "Use 'fee' for questions about tuition, late fees, fees, payment, refund, late charges, "
         "scholarships, or any money-related topic.\n"
         "Use 'general' for greetings, casual talk, or anything not related to "
         "the college rules or fee.\n\n"
@@ -80,6 +80,7 @@ def classifier_node(state:State)->dict:
 
 # this is actually use for routing 
 def router(state:State)->str:
+    print("🔥 ROUTER EXECUTED")
     if(state["query_type"] == "academic"):
         return "academic_node"
     elif(state["query_type"] == "fee"):
@@ -89,7 +90,7 @@ def router(state:State)->str:
 
 # academic node
 def academic_node(state:State)->dict:
-
+    print("🔥 ACADEMIC NODE EXECUTED")
     query = state["messages"][-1].content
     docs = academic_retriever.invoke(query)
 
@@ -98,20 +99,25 @@ def academic_node(state:State)->dict:
 
 # fee_node
 def fee_node(state:State)->dict:
+    print("🔥 FEES NODE EXECUTED")
     query = state["messages"][-1].content
     docs = fees_retriever.invoke(query)
-
+   
     context = "\n\n".join(doc.page_content for doc in docs)
+   
     return {"retrived_context" : context}
 
 # general node
+
 def general_node(state:State)->dict:
+    print("🔥 GENERAL NODE EXECUTED")
     return{"retrived_context" : "NO CONTEXT RETRIVED"}
 
 
 # response node
 def response_node(state:State)->dict:
     """Generates the final answer, personalized using the student's programme."""
+    print("🔥 RESPONSE NODE EXECUTED")
     query = state["messages"][-1].content
     programme = state['programme']
     context = state["retrived_context"]
@@ -135,6 +141,8 @@ def response_node(state:State)->dict:
             f"Question: {query}\n\n"
             f"Give a clear, friendly, and precise answer."
         )
+        print(f"lenght of prompt : {len(prompt)}")
+        
         response = chat_model.invoke(prompt)
 
     return {
@@ -160,3 +168,35 @@ graph.add_edge("general_node","response_node")
 graph.add_edge("response_node",END)
 
 app = graph.compile()
+
+
+# creating the chatbot loop
+print("\n\n-----WELCOME TO THE COLLEGE CHATBOT-----")
+print("Type 'exit' OR 'quit' to stop the chat\n")
+
+print("Select your Programme:\n Type 1 for BCA, 2 for BBA and 3 for B.Com(H)")
+programme = int(input())
+if programme==1:
+    programme = "BCA"
+elif programme==2:
+    programme = "BBA"
+else:
+    programme = "B.Com(H)"
+
+print(f"Your programme is selected as {programme}. Tell me what you would like to know.")
+
+
+while True:
+    user_input = input("\n\nYOU: ")
+        
+    initial_state = {
+        "programme" : programme,
+        "messages" : [("human",user_input)] 
+    }
+
+    if user_input.lower() in ["exit","quit"]:
+        print("\nThankyou for using College Chatbot. Wishing you a great future ahead. See you soon \nExiting....")
+        break
+    else:
+        response = app.invoke(initial_state)
+        print(f"\nAssistant: {response['messages'][-1].content}")
